@@ -26,7 +26,7 @@ app.use(session({
     saveUninitialized:false,
     cookie:{
         maxAge:30*24*60*30*1000, // 30 days
-        sameSite: 'lax',
+        sameSite: 'none',
         secure: true  //set true if in production
     }
 }))
