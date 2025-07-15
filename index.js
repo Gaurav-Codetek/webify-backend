@@ -21,13 +21,13 @@ app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 mongo();
 
 app.use(session({
-    secret: 'auth-key',
+    secret: `${process.env.SECRET_KEY}`,
     resave: false,
     saveUninitialized:false,
     cookie:{
         maxAge:30*24*60*30*1000, // 30 days
         sameSite: 'lax',
-        secure: false  //set true if in production
+        secure: true  //set true if in production
     }
 }))
 app.use(passport.initialize());
