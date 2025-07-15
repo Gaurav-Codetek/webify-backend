@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 mongo();
-
+app.set('trust proxy', 1);
 app.use(session({
     secret: `${process.env.SECRET_KEY}`,
     resave: false,

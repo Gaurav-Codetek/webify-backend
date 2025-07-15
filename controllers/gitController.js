@@ -9,7 +9,8 @@ exports.getUserRepos = async (req, res) => {
         Authorization: `Bearer ${accessToken}`,
         Accept: 'application/vnd.github+json',
         'User-Agent': 'WebifyApp'
-      }
+      },
+      withCredentials:'true'
     });
 
     const repos = response.data.map(repo => ({
@@ -31,6 +32,7 @@ exports.createWebhook = async (req, res) => {
   const config = {
     url: `https://api.github.com/repos/${owner}/${repo}/hooks`,
     method: "post",
+    withCredentials:true,
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: "application/vnd.github+json",
