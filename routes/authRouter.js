@@ -10,7 +10,6 @@ const verifyApiKey = require('../middleware/apiAuth');
 // Redirect to GitHub for login
 router.get('/github', passport.authenticate('github', { scope: ['repo', 'admin:repo_hook', 'user:email'] }));
 
-
 // Callback after GitHub login
 router.get('/github/callback',
   passport.authenticate('github', { failureRedirect: `${process.env.CORS_ORIGIN}/auth` }),

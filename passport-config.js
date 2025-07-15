@@ -6,7 +6,7 @@ require('dotenv').config();
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: `${process.env.BACKEND_URL}/auth/github/callback`
+  callbackURL: `https://webify-backend-tau.vercel.app/auth/github/callback`
 }, (accessToken, refreshToken, profile, done) => {
   // Save or use the profile here
   console.log(profile._json.avatar_url);

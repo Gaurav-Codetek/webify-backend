@@ -17,7 +17,7 @@ router.get('/getproject/:githubId', projectController.getAllProject);
 router.get('/getBuild/:githubId/:prname/:blname', buildController.getBuild);
 router.get('/getBuild/:githubId/:prname', buildController.getAllBuild);
 router.get('/test', (req, res)=>{res.send("testing")});
-router.post('/analytics-snippet.js', validateSubdomain, analyticsController.getAnalytics);
+router.post('/analytics', validateSubdomain, analyticsController.getAnalytics);
 // router.get('/get-analytics'); // on AWS server
 // router.post('/upload-zip'); // on AWS server
 
