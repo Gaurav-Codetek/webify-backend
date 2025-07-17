@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const cors = require('cors');
 const mongoose = require("mongoose");
+const MongoStore = require('connect-mongo');
 const mongo = require('./db/conn')
 const bodyParser = require("body-parser");
 const PORT = 8333;
@@ -21,15 +22,16 @@ app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 mongo();
 app.set('trust proxy', 1);
 app.use(session({
-    secret: `${process.env.SECRET_KEY}`,
-    resave: false,
-    saveUninitialized:false,
-    cookie:{
-        maxAge:30*24*60*30*1000, // 30 days
-        sameSite: 'none',
-        secure: true  //set true if in production
-    }
-}))
+  secret: process.env.SECRET_KEY,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.DB_CONN }),
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    sameSite: 'none',
+    secure: true
+  }
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
