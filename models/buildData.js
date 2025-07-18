@@ -4,19 +4,19 @@ const logSchema = require('./logs');
 const buildSchema = mongoose.Schema({
     blno: {
         type: Number,
-        required: true
+        required: false
     },
     blname: {
         type: String,
-        required: true
+        required: false
     },
     url: {
         type: String,
-        required: true
+        required: false
     },
     buildlogs: {
         type: [logSchema],
-        required: true
+        required: false
     },
     deploymsg: {
         type: String,
@@ -24,11 +24,11 @@ const buildSchema = mongoose.Schema({
     },
     repository:{
         type: String,
-        required: true
+        required: false
     },
     framework:{
         type: String,
-        required: true
+        required: false
     },
     createdAt: {
         type: Date,

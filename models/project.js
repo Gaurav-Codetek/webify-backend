@@ -5,39 +5,39 @@ const buildSchema = require('./buildData');
 const projectSchema = mongoose.Schema({
     prno: {
         type: Number,
-        required: true
+        required: false
     },
     prname: {
         type: String,
-        required: true
+        required: false
     },
     subdomainurl: {
         type: String,
-        required: true
+        required: false
     },
     projectlogs: {
         type: [logSchema],
-        required: true
+        required: false
     },
     buildData: {
         type: [buildSchema],
-        required: true
+        required: false
     },
     status: {
         type: String,
-        required: true
+        required: false
     },
     branch: {
         type: String,
-        required: true
+        required: false
     },
     framework: {
         type: String,
-        required: true
+        required: false
     },
     repository:{
         type: String,
-        required: true
+        required: false
     }
 })
 module.exports = projectSchema;

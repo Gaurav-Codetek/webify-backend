@@ -5,15 +5,15 @@ const projectSchema = require('./project');
 const masterSchema = new mongoose.Schema({
     gitId: {
         type: String,
-        required: true
+        required: false
     },
     gitEmail:{
         type: String,
-        required: true
+        required: false
     },
     gitUID:{
         type: String,
-        required: true
+        required: false
     },
     avatar:{
         type: String,
@@ -21,11 +21,11 @@ const masterSchema = new mongoose.Schema({
     },
     systemlogs: {
         type: [logSchema],
-        required: true
+        required: false
     },
     projects: {
         type: [projectSchema],
-        required: true
+        required: false
     }
 })
 
