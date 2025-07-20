@@ -28,7 +28,7 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: process.env.DB_CONN }),
   cookie: {
     maxAge: 30 * 24 * 60 * 60 * 1000,
-    sameSite: 'none',
+    sameSite: 'lax',
     secure: true
   }
 }));
