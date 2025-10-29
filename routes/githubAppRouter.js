@@ -20,7 +20,7 @@ const router = express.Router();
     authStrategy: createAppAuth,
     auth: {
       appId: process.env.GITHUB_APP_ID,
-      privateKey,
+      privateKey: process.env.GITHUB_PEM.replace(/\\n/g, '\n'),
       clientId: process.env.GITHUB_APP_CLIENT_ID,
       clientSecret: process.env.GITHUB_APP_CLIENT_SECRET,
     },
