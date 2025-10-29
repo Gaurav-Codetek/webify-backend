@@ -38,6 +38,7 @@ app.use(passport.session());
 // redisClient.connect(console.log("Redis connected")).catch(console.error);
 app.use('/', useRoute);
 app.use('/auth', authRouter);
+app.use("/github-app", require("./routes/githubAppRouter"));
 
 app.listen(PORT, ()=>{
     console.log("Server running at port", PORT);

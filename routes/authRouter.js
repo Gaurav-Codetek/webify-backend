@@ -8,7 +8,7 @@ const isAuthenticated = require('../middleware/isAuth');
 const verifyApiKey = require('../middleware/apiAuth');
 
 // Redirect to GitHub for login
-router.get('/github', passport.authenticate('github', { scope: ['repo', 'admin:repo_hook', 'user:email'] }));
+router.get('/github', passport.authenticate('github', { scope: ['read:user', 'user:email'] }));
 
 // Callback after GitHub login
 router.get('/github/callback',
@@ -19,7 +19,7 @@ router.get('/github/callback',
 router.get('/logout', userController.logout);
 router.get('/check',isAuthenticated, userController.checkAuth);
 
-router.get('/repo', isAuthenticated , gitController.getUserRepos);
+// router.get('/repo', isAuthenticated , gitController.getUserRepos);
 router.post('/createWebhook', isAuthenticated, gitController.createWebhook);
 
 module.exports = router;

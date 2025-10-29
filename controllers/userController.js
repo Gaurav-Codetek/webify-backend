@@ -3,40 +3,49 @@ const master = require("../models/master");
 const { masterTemplate } = require("../utils/masterStruct");
 
 exports.userAuth = async (req, res) => {
-    try {
-        const git = req.user;
+  try {
+    const git = req.user;
+    const userData = {
+      githubId: git.id,
+      username: git.username,
+      email: git.emails?.[0]?.value,
+      avatar: git.photos?.[0]?.value,
+      accessToken: git.accessToken // make sure passport adds this
+    };
 
-        const userData = {
-            githubId: git.id,
-            username: git.username,
-            email: git.emails?.[0]?.value,
-            avatar: git.photos?.[0]?.value
-        };
+    const data = { ...masterTemplate };
+    data.gitId = git.username;
+    data.gitEmail = git.emails?.[0]?.value;
+    data.gitUID = git.id;
+    data.user = git.username;
+    data.avatar = userData.avatar;
 
-        const data = { ...masterTemplate }; // deep copy
-
-        data.gitId = git.username;
-        data.gitEmail = git.emails?.[0]?.value;
-        data.gitUID = git.id;
-        data.user = git.username;
-        data.avatar = userData.avatar // also ensure this exists in your schema
-
-        const existingUser = await master.findOne({ gitId: git.username });
-
-        if (!existingUser) {
-            const newUser = new master(data);
-            await newUser.save();
-            // console.log("New user saved:", newUser);
-        } else {
-            // console.log("User already exists:", existingUser);
-        }
-
-        res.redirect(`${process.env.CORS_ORIGIN}/dashboard/${userData.username}`);
-
-    } catch (err) {
-        console.error("GitHub login error:", err);
-        return res.status(500).json({ message: "GitHub login failed" });
+    let user = await master.findOne({ gitId: git.username });
+    if (!user) {
+      user = await new master(data).save();
     }
+
+    // ✅ Check GitHub App installation
+    const installRes = await axios.get("https://api.github.com/user/installations", {
+      headers: {
+        Authorization: `token ${userData.accessToken}`,
+        Accept: "application/vnd.github+json"
+      }
+    });
+
+    const installations = installRes.data.installations || [];
+    if (installations.length === 0) {
+      // no installation yet
+      const installUrl = `https://github.com/apps/${process.env.GITHUB_APP_NAME}/installations/new`;
+      return res.redirect(installUrl);
+    }
+
+    // if installed, go to dashboard
+    res.redirect(`${process.env.CORS_ORIGIN}/dashboard/${userData.username}`);
+  } catch (err) {
+    console.error("GitHub login error:", err.response?.data || err.message);
+    return res.status(500).json({ message: "GitHub login failed" });
+  }
 };
 
 
