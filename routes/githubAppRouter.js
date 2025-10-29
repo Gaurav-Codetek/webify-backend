@@ -2,7 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
-const { App } = require("octokit");
+const { App } = require("@octokit/app");
 const router = express.Router();
 require("dotenv").config();
 

@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@octokit/app": "^16.1.1",
     "axios": "^1.10.0",
     "body-parser": "^2.2.0",
     "connect-mongo": "^5.1.0",
@@ -23,7 +24,6 @@
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.1",
     "nodemon": "^3.1.10",
-    "octokit": "^5.0.4",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "redis": "^4.7.1",
