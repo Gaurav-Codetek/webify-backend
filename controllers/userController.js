@@ -1,6 +1,7 @@
 const { authenticate } = require("passport");
 const master = require("../models/master");
 const { masterTemplate } = require("../utils/masterStruct");
+const axios = require('axios');
 
 exports.userAuth = async (req, res) => {
   try {
