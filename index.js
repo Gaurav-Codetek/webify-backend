@@ -15,6 +15,9 @@ const useRoute = require('./routes/router');
 const authRouter = require('./routes/authRouter');
 const githubWebhook = require("./routes/githubWebhook");
 const app = express();
+
+app.use("/", githubWebhook);
+
 app.use(express.json());
 
 app.use(bodyParser.json());
@@ -39,7 +42,6 @@ app.use(passport.session());
 // redisClient.connect(console.log("Redis connected")).catch(console.error);
 app.use('/', useRoute);
 app.use('/auth', authRouter);
-app.use("/", githubWebhook);
 app.use("/github-app", require("./routes/githubAppRouter"));
 
 app.listen(PORT, ()=>{
