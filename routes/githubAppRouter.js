@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 require("dotenv").config();
+const master = require("../models/master");
 
 const router = express.Router();
 
@@ -26,28 +27,54 @@ const router = express.Router();
 //     },
 //   });
 
-  // Webhook handler
-  router.post("/webhook", express.json(), async (req, res) => {
-    try {
-      const event = req.headers["x-github-event"];
-      const payload = req.body;
+// Webhook handler
+router.post("/webhook", express.json(), async (req, res) => {
+  try {
+    const event = req.headers["x-github-event"];
+    const payload = req.body;
 
-      console.log(`🔔 GitHub event: ${event}`);
+    console.log(`🔔 GitHub event: ${event}`);
 
-      if (event === "push") {
-        const repo = payload.repository.full_name;
-        const branch = payload.ref.split("/").pop();
-        const commit = payload.after;
+    if (event === "push") {
+      const repo = payload.repository.full_name;
+      const branch = payload.ref.split("/").pop();
+      const commit = payload.after;
 
-        console.log(`🚀 Push detected on ${repo}@${branch}`);
-      }
-
-      res.status(200).send("Webhook received");
-    } catch (err) {
-      console.error("Webhook error:", err);
-      res.status(500).send("Error processing webhook");
+      console.log(`🚀 Push detected on ${repo}@${branch}`);
     }
-  });
+
+    res.status(200).send("Webhook received");
+  } catch (err) {
+    console.error("Webhook error:", err);
+    res.status(500).send("Error processing webhook");
+  }
+});
 // })();
+
+router.get("/install/callback", async (req, res) => {
+  try {
+    const { installation_id, setup_action } = req.query;
+    const username = req.session.pendingUser; // recover stored OAuth user
+
+    if (!username) {
+      return res.status(400).send("Session expired or user unknown.");
+    }
+
+    // Link installation with the user
+    // await master.updateOne(
+    //   { gitId: username },
+    //   { installationId: installation_id, setupAction: setup_action }
+    // );
+
+    // Clear session placeholder
+    delete req.session.pendingUser;
+
+    // Redirect to frontend dashboard
+    return res.redirect(`${process.env.CORS_ORIGIN}/dashboard/${username}`);
+  } catch (err) {
+    console.error("Installation callback error:", err.message);
+    res.status(500).send("Installation callback failed");
+  }
+});
 
 module.exports = router;

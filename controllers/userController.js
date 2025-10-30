@@ -55,6 +55,7 @@ exports.userAuth = async (req, res) => {
     );
 
     if (!userInstallation) {
+      req.session.pendingUser = userData.username;
       const installUrl = `https://github.com/apps/${process.env.GITHUB_APP_NAME}/installations/new`;
       return res.redirect(installUrl);
     }
