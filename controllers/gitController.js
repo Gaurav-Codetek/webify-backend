@@ -68,6 +68,13 @@ exports.getUserRepos = async (req, res) => {
   }
 };
 
+exports.reinstallApp = async (req, res) =>{
+  const { username } = req.params;
+  req.session.pendingUser = username;
+  const installUrl = `https://github.com/apps/${process.env.GITHUB_APP_NAME}/installations/new`;
+  res.redirect(installUrl);
+} 
+
 
 exports.createWebhook = async (req, res) => {
   const { webhookUrl, owner, repo } = req.body;

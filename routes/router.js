@@ -4,6 +4,7 @@ const rootController = require('../controllers/rootController');
 const projectController = require('../controllers/projectController')
 const buildController = require('../controllers/buildController')
 const analyticsController = require('../controllers/analyticsController');
+const gitController = require('../controllers/gitController');
 const validateSubdomain = require('../middleware/authAnalytics');
 
 router.get('/', rootController.root);
@@ -12,6 +13,8 @@ router.post('/new-build/:githubId/:prname', buildController.newBuild);
 router.post('/domainRegister', buildController.domainRegister);
 router.post('/env', projectController.getEnv);
 router.post('/update-env', projectController.updateEnv);
+
+router.get('/github/reinstall/:username', gitController.reinstallApp);
 router.get('/domainValidation/:domain', buildController.domainValidation);
 router.get('/getproject/:githubId/:prname', projectController.getProject);
 router.get('/getproject/:githubId', projectController.getAllProject);
