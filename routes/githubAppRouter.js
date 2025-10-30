@@ -6,25 +6,25 @@ require("dotenv").config();
 
 const router = express.Router();
 
-(async () => {
-  const { Octokit } = await import("@octokit/core");
-  const { createAppAuth } = await import("@octokit/auth-app");
+// (async () => {
+//   const { Octokit } = await import("@octokit/core");
+//   const { createAppAuth } = await import("@octokit/auth-app");
 
-  const privateKey = fs.readFileSync(
-    path.join(__dirname, "../webify-deployer.pem"),
-    "utf8"
-  );
+//   const privateKey = fs.readFileSync(
+//     path.join(__dirname, "../webify-deployer.pem"),
+//     "utf8"
+//   );
 
-  // Create GitHub App authenticated client
-  const octokit = new Octokit({
-    authStrategy: createAppAuth,
-    auth: {
-      appId: process.env.GITHUB_APP_ID,
-      privateKey: Buffer.from(process.env.GITHUB_PEM, "base64").toString("utf8"),
-      clientId: process.env.GITHUB_APP_CLIENT_ID,
-      clientSecret: process.env.GITHUB_APP_CLIENT_SECRET,
-    },
-  });
+//   // Create GitHub App authenticated client
+//   const octokit = new Octokit({
+//     authStrategy: createAppAuth,
+//     auth: {
+//       appId: process.env.GITHUB_APP_ID,
+//       privateKey: Buffer.from(process.env.GITHUB_PEM, "base64").toString("utf8"),
+//       clientId: process.env.GITHUB_APP_CLIENT_ID,
+//       clientSecret: process.env.GITHUB_APP_CLIENT_SECRET,
+//     },
+//   });
 
   // Webhook handler
   router.post("/webhook", express.json(), async (req, res) => {
@@ -48,6 +48,6 @@ const router = express.Router();
       res.status(500).send("Error processing webhook");
     }
   });
-})();
+// })();
 
 module.exports = router;
