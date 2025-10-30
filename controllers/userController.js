@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const master = require("../models/master");
-const { masterTemplate } = require("../templates/masterTemplate");
+const { masterTemplate } = require("../utils/masterStruct");
 
 exports.userAuth = async (req, res) => {
   try {
