@@ -19,7 +19,7 @@ router.get('/github/callback',
 router.get('/logout', userController.logout);
 router.get('/check',isAuthenticated, userController.checkAuth);
 
-// router.get('/repo', isAuthenticated , gitController.getUserRepos);
+router.get('/repo', gitController.getUserRepos);
 router.post('/createWebhook', isAuthenticated, gitController.createWebhook);
 
 module.exports = router;
