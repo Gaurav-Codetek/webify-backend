@@ -1,30 +1,73 @@
-const axios = require('axios');
+const axios = require("axios");
+const jwt = require("jsonwebtoken");
+const master = require("../models/master"); // your DB model
 
 exports.getUserRepos = async (req, res) => {
   try {
-    const { accessToken } = req.user;
+    const username = req.user.username; // or req.params.username depending on your setup
 
-    const response = await axios.get('https://api.github.com/user/repos?per_page=100', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'WebifyApp'
+    // 🔹 1. Fetch user's installationId from DB
+    const user = await master.findOne({ gitId: username });
+    if (!user || !user.installationId) {
+      return res.status(400).json({ message: "No installation found for this user" });
+    }
+
+    const installationId = user.installationId;
+
+    // 🔹 2. Decode PEM (base64 from .env)
+    const privateKey = Buffer.from(process.env.GITHUB_PEM, "base64").toString("utf8");
+
+    // 🔹 3. Create App JWT
+    const appJWT = jwt.sign(
+      {
+        iat: Math.floor(Date.now() / 1000) - 60,
+        exp: Math.floor(Date.now() / 1000) + 10 * 60,
+        iss: process.env.GITHUB_APP_ID,
       },
-      withCredentials:'true'
+      privateKey,
+      { algorithm: "RS256" }
+    );
+
+    // 🔹 4. Create Installation Access Token
+    const tokenRes = await axios.post(
+      `https://api.github.com/app/installations/${installationId}/access_tokens`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${appJWT}`,
+          Accept: "application/vnd.github+json",
+        },
+      }
+    );
+
+    const installationToken = tokenRes.data.token;
+
+    // 🔹 5. Fetch Repositories accessible to this installation
+    const reposRes = await axios.get("https://api.github.com/installation/repositories", {
+      headers: {
+        Authorization: `token ${installationToken}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "WebifyApp",
+      },
     });
 
-    const repos = response.data.map(repo => ({
+    const repos = reposRes.data.repositories.map(repo => ({
+      id: repo.id,
       name: repo.name,
       full_name: repo.full_name,
-      private: repo.private
+      private: repo.private,
+      html_url: repo.html_url,
+      permissions: repo.permissions,
     }));
 
     res.status(200).json(repos);
+
   } catch (err) {
-    console.error('GitHub repo fetch error:', err.response?.data || err.message);
-    res.status(500).json({ message: 'Failed to fetch repositories' });
+    console.error("GitHub App repo fetch error:", err.response?.data || err.message);
+    res.status(500).json({ message: "Failed to fetch app installation repositories" });
   }
 };
+
 
 exports.createWebhook = async (req, res) => {
   const { webhookUrl, owner, repo } = req.body;

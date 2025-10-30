@@ -4,7 +4,6 @@ const path = require("path");
 const express = require("express");
 require("dotenv").config();
 const master = require("../models/master");
-
 const router = express.Router();
 
 // (async () => {
@@ -65,6 +64,10 @@ router.get("/install/callback", async (req, res) => {
     //   { gitId: username },
     //   { installationId: installation_id, setupAction: setup_action }
     // );
+    await master.updateOne(
+      { gitId: username },         // filter: find by username or id
+      { $set: { installationId: installation_id } } // update: add or update this field
+    );
 
     // Clear session placeholder
     delete req.session.pendingUser;

@@ -26,6 +26,10 @@ const masterSchema = new mongoose.Schema({
     projects: {
         type: [projectSchema],
         required: false
+    },
+    installationId:{
+        type: String,
+        required: false
     }
 })
 

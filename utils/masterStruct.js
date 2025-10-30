@@ -20,4 +20,5 @@ exports.masterTemplate = {
     gitUID: "",
     systemlogs: [],
     projects: [],
+    installationId:""
 }
