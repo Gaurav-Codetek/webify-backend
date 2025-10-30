@@ -10,7 +10,8 @@ router.get('/', rootController.root);
 router.post('/new-project/:githubId', projectController.newProject);
 router.post('/new-build/:githubId/:prname', buildController.newBuild);
 router.post('/domainRegister', buildController.domainRegister);
-
+router.post('/env', projectController.getEnv);
+router.post('/update-env', projectController.updateEnv);
 router.get('/domainValidation/:domain', buildController.domainValidation);
 router.get('/getproject/:githubId/:prname', projectController.getProject);
 router.get('/getproject/:githubId', projectController.getAllProject);

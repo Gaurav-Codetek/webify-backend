@@ -35,7 +35,11 @@ const projectSchema = mongoose.Schema({
         type: String,
         required: false
     },
-    repository:{
+    repository: {
+        type: String,
+        required: false
+    },
+    env: {
         type: String,
         required: false
     }
