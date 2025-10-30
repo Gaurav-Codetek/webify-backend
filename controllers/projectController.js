@@ -1,4 +1,5 @@
 const master = require('../models/master');
+const domainShelf = require('../models/domainShelf');
 
 exports.newProject = async (req, res) => {
   const { githubId } = req.params;
@@ -28,6 +29,52 @@ exports.newProject = async (req, res) => {
     res.status(500).json({ error: 'Update failed', details: err.message });
   }
 };
+
+exports.deleteProject = async (req, res) => {
+  const { githubId, prname } = req.params;
+
+  try {
+    // Check if user exists
+    const userDoc = await master.findOne({ gitId: githubId });
+    if (!userDoc) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Find the project to delete
+    const projectDoc = userDoc.projects.find((proj) => proj.prname === prname);
+    if (!projectDoc) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Extract domain safely
+    const domain = projectDoc.subdomainurl.split('.')[0];
+
+    // Remove the project from user's projects
+    const result = await master.updateOne(
+      { gitId: githubId },
+      { $pull: { projects: { prname } } }
+    );
+
+    // Remove the domain from domainShelf
+    const domainResult = await domainShelf.updateOne(
+      {},
+      { $pull: { domain: { domainName: domain } } }
+    );
+
+    // Check if anything was modified
+    if (result.modifiedCount === 0 && domainResult.modifiedCount === 0) {
+      return res.status(404).json({ message: 'Nothing was deleted' });
+    }
+
+    res.status(200).json({ message: 'Project and domain removed successfully' });
+
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ error: 'Failed to delete project', details: err.message });
+  }
+};
+
+
 
 exports.getEnv = async (req, res) => {
   try {

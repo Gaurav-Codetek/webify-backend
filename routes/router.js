@@ -18,6 +18,7 @@ router.get('/github/reinstall/:username', gitController.reinstallApp);
 router.get('/domainValidation/:domain', buildController.domainValidation);
 router.get('/getproject/:githubId/:prname', projectController.getProject);
 router.get('/getproject/:githubId', projectController.getAllProject);
+router.get('/deleteproject/:githubId/:prname', projectController.deleteProject);
 router.get('/getBuild/:githubId/:prname/:blname', buildController.getBuild);
 router.get('/getBuild/:githubId/:prname', buildController.getAllBuild);
 router.get('/test', (req, res)=>{res.send("testing")});
