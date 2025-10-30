@@ -1,17 +1,18 @@
-const { authenticate } = require("passport");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const master = require("../models/master");
-const { masterTemplate } = require("../utils/masterStruct");
-const axios = require('axios');
+const { masterTemplate } = require("../templates/masterTemplate");
 
 exports.userAuth = async (req, res) => {
   try {
     const git = req.user;
+
     const userData = {
       githubId: git.id,
       username: git.username,
       email: git.emails?.[0]?.value,
       avatar: git.photos?.[0]?.value,
-      accessToken: git.accessToken // make sure passport adds this
+      accessToken: git.accessToken
     };
 
     const data = { ...masterTemplate };
@@ -26,28 +27,45 @@ exports.userAuth = async (req, res) => {
       user = await new master(data).save();
     }
 
-    // ✅ Check GitHub App installation
-    const installRes = await axios.get("https://api.github.com/user/installations", {
+    // ✅ Decode private key from Base64
+    const privateKey = Buffer.from(process.env.GITHUB_PEM, "base64").toString("utf8");
+
+    // ✅ Generate App JWT
+    const appJWT = jwt.sign(
+      {
+        iat: Math.floor(Date.now() / 1000) - 60,
+        exp: Math.floor(Date.now() / 1000) + 10 * 60,
+        iss: process.env.GITHUB_APP_ID
+      },
+      privateKey,
+      { algorithm: "RS256" }
+    );
+
+    // ✅ Fetch installations
+    const installRes = await axios.get("https://api.github.com/app/installations", {
       headers: {
-        Authorization: `token ${userData.accessToken}`,
+        Authorization: `Bearer ${appJWT}`,
         Accept: "application/vnd.github+json"
       }
     });
 
-    const installations = installRes.data.installations || [];
-    if (installations.length === 0) {
-      // no installation yet
+    const installations = installRes.data || [];
+    const userInstallation = installations.find(
+      inst => inst.account?.login?.toLowerCase() === userData.username.toLowerCase()
+    );
+
+    if (!userInstallation) {
       const installUrl = `https://github.com/apps/${process.env.GITHUB_APP_NAME}/installations/new`;
       return res.redirect(installUrl);
     }
 
-    // if installed, go to dashboard
     res.redirect(`${process.env.CORS_ORIGIN}/dashboard/${userData.username}`);
   } catch (err) {
     console.error("GitHub login error:", err.response?.data || err.message);
     return res.status(500).json({ message: "GitHub login failed" });
   }
 };
+
 
 
 exports.logout = (req, res) => {
