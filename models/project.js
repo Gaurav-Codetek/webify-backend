@@ -42,6 +42,14 @@ const projectSchema = mongoose.Schema({
     env: {
         type: String,
         required: false
+    },
+    commit: {
+        type: String,
+        required: false
+    },
+    date: {
+        type: String,
+        required: false
     }
 })
 module.exports = projectSchema;

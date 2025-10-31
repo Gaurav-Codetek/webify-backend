@@ -4,7 +4,9 @@ exports.projectTemplate = {
     subdomainurl: "",
     projectlogs: [],
     buildData: [],
-    status: ""
+    status: "",
+    branch:"",
+    commit:""
 };
 
 exports.buildTemplate = {
