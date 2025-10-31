@@ -17,7 +17,7 @@ exports.newProject = async (req, res) => {
     projectData.prno = prsize;
 
     // 3️⃣ Extract repo owner, name, and branch
-    const repoUrl = projectData.repo_url.replace(/\.git$/, "");
+    const repoUrl = projectData.repository.replace(/\.git$/, "");
     const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
     if (!match) return res.status(400).json({ message: "Invalid repo URL" });
 
