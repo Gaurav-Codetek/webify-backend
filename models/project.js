@@ -47,6 +47,10 @@ const projectSchema = mongoose.Schema({
         type: String,
         required: false
     },
+    commitMsg: {
+        type: String,
+        required: false
+    },
     date: {
         type: String,
         required: false

@@ -1,88 +1,110 @@
 const master = require('../models/master');
 const domainShelf = require('../models/domainShelf');
 const axios = require("axios");
+const jwt = require("jsonwebtoken");
 
 exports.newProject = async (req, res) => {
   const { githubId } = req.params;
   const projectData = req.body;
 
   try {
+    // 1️⃣ Find user document
     const userDoc = await master.findOne({ gitId: githubId });
+    if (!userDoc) return res.status(404).json({ message: "User not found" });
 
-    if (!userDoc) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    // 2️⃣ Prepare project numbering
+    const prsize = userDoc.projects.length + 1;
+    projectData.prno = prsize;
 
-    // Extract owner and repo name from repo_url
-    // Example: https://github.com/Gaurav-Codetek/campus-ai.git
-    const match = projectData.repository.match(/github\.com\/([^/]+)\/([^/.]+)/);
-    if (!match) {
-      return res.status(400).json({ message: "Invalid GitHub repository URL" });
-    }
+    // 3️⃣ Extract repo owner, name, and branch
+    const repoUrl = projectData.repo_url.replace(/\.git$/, "");
+    const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+    if (!match) return res.status(400).json({ message: "Invalid repo URL" });
 
     const owner = match[1];
     const repo = match[2];
     const branch = projectData.branch || "main";
 
-    // Fetch latest commit info from GitHub API
-    const commitUrl = `https://api.github.com/repos/${owner}/${repo}/commits/${branch}`;
-    const commitResponse = await axios.get(commitUrl, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        "User-Agent": "WebifyApp",
+    // 4️⃣ Generate JWT for the GitHub App
+    const privateKey = Buffer.from(process.env.GITHUB_PEM, "base64").toString("utf8");
+    const appJWT = jwt.sign(
+      {
+        iat: Math.floor(Date.now() / 1000) - 60,
+        exp: Math.floor(Date.now() / 1000) + 10 * 60,
+        iss: process.env.GITHUB_APP_ID
       },
-    });
+      privateKey,
+      { algorithm: "RS256" }
+    );
 
-    const commitData = commitResponse.data;
-    const latestCommit = {
-      id: commitData.sha,
-      message: commitData.commit.message,
-    };
+    // 5️⃣ Exchange for Installation Access Token
+    const installationId = userDoc.installationId;
+    if (!installationId)
+      return res.status(400).json({ message: "GitHub installation not found for this user" });
 
-    // Format current date/time (IST)
+    const installRes = await axios.post(
+      `https://api.github.com/app/installations/${installationId}/access_tokens`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${appJWT}`,
+          Accept: "application/vnd.github+json"
+        }
+      }
+    );
+
+    const installationToken = installRes.data.token;
+
+    // 6️⃣ Fetch latest commit for that branch
+    const commitsRes = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/commits/${branch}`,
+      {
+        headers: {
+          Authorization: `Bearer ${installationToken}`,
+          Accept: "application/vnd.github+json",
+          "User-Agent": "WebifyApp"
+        }
+      }
+    );
+
+    const latestCommit = commitsRes.data;
+    const commitId = latestCommit.sha;
+    const commitMessage = latestCommit.commit.message;
+
+    // 7️⃣ Format date & time
     const now = new Date();
-    const options = {
+    const formattedDate = now.toLocaleTimeString("en-IN", {
       hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "Asia/Kolkata",
-    };
-    const formattedDate = now.toLocaleString("en-IN", options).replace(",", "");
+      minute: "numeric",
+      hour12: true
+    }) + ` ${now.getDate()} ${now.toLocaleString("en-IN", { month: "short" })} ${now.getFullYear()}`;
 
-    // Add commit info + date
-    projectData.commit = latestCommit;
-    projectData.date = formattedDate;
+    // 8️⃣ Add commit info and date to projectData
+    projectData.commit = commitId
+    projectData.commitMsg = commitMessage
+    projectData.date = formattedDate
 
-    // Assign project number
-    const prsize = userDoc.projects.length + 1;
-    projectData.prno = prsize;
-
-    // Push new project into user's projects array
-    const result = await master.updateOne(
+    // 9️⃣ Save to DB
+    await master.updateOne(
       { gitId: githubId },
       { $push: { projects: projectData } },
       { upsert: false }
     );
 
-    console.log("Project added:", result);
-
     res.status(200).json({
       message: "Project added successfully",
       projectNumber: prsize,
-      commit: latestCommit,
-      date: formattedDate,
+      commit: projectData.latestCommit
     });
   } catch (err) {
-    console.error("Error creating project:", err.response?.data || err.message);
+    console.error("❌ Error creating project:", err.response?.data || err.message);
     res.status(500).json({
-      error: "Failed to create project",
-      details: err.response?.data?.message || err.message,
+      error: "Project creation failed",
+      details: err.response?.data || err.message
     });
   }
 };
+
 
 exports.deleteProject = async (req, res) => {
   const { githubId, prname } = req.params;
