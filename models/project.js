@@ -51,6 +51,10 @@ const projectSchema = mongoose.Schema({
         type: String,
         required: false
     },
+    domain:{
+        type: String,
+        required: false
+    },
     date: {
         type: String,
         required: false
