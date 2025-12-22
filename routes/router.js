@@ -15,6 +15,8 @@ router.post('/env', projectController.getEnv);
 router.post('/update-env', projectController.updateEnv);
 router.post('/update-field', projectController.updateProjectField);
 
+router.patch('/delete-field', projectController.deleteProjectField)
+
 router.get('/github/reinstall/:username', gitController.reinstallApp);
 router.get('/domainValidation/:domain', buildController.domainValidation);
 router.get('/getproject/:githubId/:prname', projectController.getProject);

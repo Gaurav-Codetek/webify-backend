@@ -293,3 +293,57 @@ exports.updateProjectField = async (req, res) => {
     });
   }
 };
+
+exports.deleteProjectField = async (req, res) => {
+  try {
+    const { githubId, prname, field } = req.body;
+
+    // 1️⃣ Validate input
+    if (!githubId || !prname || !field) {
+      return res.status(400).json({
+        message: 'githubId, prname, and field are required'
+      });
+    }
+
+    // 2️⃣ Protect critical fields (VERY IMPORTANT)
+    const protectedFields = ['prname', '_id', 'repository', 'commit', 'date'];
+
+    if (protectedFields.includes(field)) {
+      return res.status(403).json({
+        message: `Field '${field}' cannot be deleted`
+      });
+    }
+
+    // 3️⃣ Build dynamic unset query
+    const unsetQuery = {};
+    unsetQuery[`projects.$.${field}`] = "";
+
+    // 4️⃣ Execute update
+    const result = await master.updateOne(
+      {
+        gitId: githubId,
+        "projects.prname": prname
+      },
+      {
+        $unset: unsetQuery
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        message: 'User or project not found'
+      });
+    }
+
+    res.status(200).json({
+      message: `Field '${field}' deleted successfully`
+    });
+
+  } catch (err) {
+    console.error('❌ Error deleting project field:', err.message);
+    res.status(500).json({
+      error: 'Failed to delete project field',
+      details: err.message
+    });
+  }
+};
