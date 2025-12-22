@@ -245,3 +245,51 @@ exports.getProject = async (req, res) => {
     res.status(500).json({ error: 'Update failed', details: err.message });
   }
 };
+
+exports.updateProjectField = async (req, res) => {
+  try {
+    const { githubId, prname, field, value } = req.body;
+
+    // 1️⃣ Validate input
+    if (!githubId || !prname || !field) {
+      return res.status(400).json({
+        message: 'githubId, prname, and field are required'
+      });
+    }
+
+    // 2️⃣ Build dynamic update object
+    const updateQuery = {};
+    updateQuery[`projects.$.${field}`] = value;
+
+    // 3️⃣ Update project dynamically
+    const result = await master.updateOne(
+      {
+        gitId: githubId,
+        "projects.prname": prname
+      },
+      {
+        $set: updateQuery
+      }
+    );
+
+    // 4️⃣ Check if project was found
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        message: 'User or project not found'
+      });
+    }
+
+    res.status(200).json({
+      message: `Project field '${field}' updated successfully`,
+      updatedField: field,
+      value
+    });
+
+  } catch (err) {
+    console.error('❌ Error updating project field:', err.message);
+    res.status(500).json({
+      error: 'Failed to update project field',
+      details: err.message
+    });
+  }
+};

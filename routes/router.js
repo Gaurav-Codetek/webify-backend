@@ -13,6 +13,7 @@ router.post('/new-build/:githubId/:prname', buildController.newBuild);
 router.post('/domainRegister', buildController.domainRegister);
 router.post('/env', projectController.getEnv);
 router.post('/update-env', projectController.updateEnv);
+router.post('/update-field', projectController.updateProjectField);
 
 router.get('/github/reinstall/:username', gitController.reinstallApp);
 router.get('/domainValidation/:domain', buildController.domainValidation);
